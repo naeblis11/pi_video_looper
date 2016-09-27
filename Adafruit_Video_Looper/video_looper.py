@@ -249,17 +249,17 @@ class VideoLooper(object):
                         if file_exten==IMG_ex:
                             is_image=True
                     if is_image:
+                        #self._blank_screen()
                         self._DisplayIMG(movie,pygame.display.Info().current_w,pygame.display.Info().current_h,self._img_time)
-                        self._blank_screen()
                     else:
                         # Start playing the first available movie.
-                        self._blank_screen()
+                        #self._blank_screen()
                         self._print('Playing movie: {0}'.format(movie))
                         self._player.play(movie, loop=playlist.length() == 1, vol = self._sound_vol)
             # Check for changes in the file search path (like USB drives added)
             # and rebuild the playlist.
             if self._reader.is_changed():
-                self._player.stop(3)  # Up to 3 second delay waiting for old 
+                self._player.stop()  # Up to 3 second delay waiting for old 
                                       # player to stop.
                 # Rebuild playlist and show countdown again (if OSD enabled).
                 playlist = self._build_playlist()
