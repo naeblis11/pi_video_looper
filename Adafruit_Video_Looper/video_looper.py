@@ -71,7 +71,7 @@ class VideoLooper(object):
         pygame.font.init()
         pygame.mouse.set_visible(False)
         size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
-        self._screen = pygame.display.set_mode(size) #, pygame.FULLSCREEN)
+        self._screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
         self._blank_screen()
         # Set other static internal state.
         self._extensions = self._player.supported_extensions()
@@ -216,7 +216,7 @@ class VideoLooper(object):
         # Display a JPG file only
         clock = pygame.time.Clock()
         thisImg = pygame.image.load(movie)
-        thisImg = pygame.transform.scale(thisImg, (display_width,display_height))
+        thisImg = pygame.transform.smoothscale(thisImg, (display_width,display_height))
             
         def imgdisplay(x,y):
             self._screen.blit(thisImg, (x,y))
