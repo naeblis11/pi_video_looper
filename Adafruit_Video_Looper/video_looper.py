@@ -71,9 +71,14 @@ class VideoLooper(object):
         pygame.font.init()
         pygame.mouse.set_visible(False)
         size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
-        self._screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
+        self._screen = pygame.display.set_mode(size) #, pygame.FULLSCREEN)
         self._blank_screen()
         # Set other static internal state.
+        self._extensions = self._player.supported_extensions()
+        self._IMG_extensions = self._config.get('omxplayer', 'IMG_extensions') \
+                                 .translate(None, ' \t\r\n.') \
+                                 .split(',')
+        self._img_time = self._config.getfloat('video_looper', 'img_time') 
         self._extensions = self._player.supported_extensions()
         self._small_font = pygame.font.Font(None, 50)
         self._big_font   = pygame.font.Font(None, 250)
@@ -152,7 +157,7 @@ class VideoLooper(object):
         message if the on screen display is enabled.
         """
         # Print message to console with number of movies in playlist.
-        message = 'Found {0} movie{1}.'.format(playlist.length(), 
+        message = 'Found {0} file{1}.'.format(playlist.length(), 
             's' if playlist.length() >= 2 else '')
         self._print(message)
         # Do nothing else if the OSD is turned off.
@@ -174,6 +179,11 @@ class VideoLooper(object):
             self._screen.blit(label2, (sw/2-l2w/2, sh/2-l2h/2))
             pygame.display.update()
             # Pause for a second between each frame.
+##            for event in pygame.event.get():
+##                if event.type==pygame.KEYDOWN and event.key==pygame.K_ESCAPE:
+##                    self._player.stop()
+##                    self._running=False
+##                    pygame.quit()
             time.sleep(1)
 
     def _idle_message(self):
@@ -201,6 +211,26 @@ class VideoLooper(object):
             self._blank_screen()
         else:
             self._idle_message()
+            
+    def _DisplayIMG(self,movie,display_width,display_height,time_count):
+        # Display a JPG file only
+        clock = pygame.time.Clock()
+        thisImg = pygame.image.load(movie)
+        thisImg = pygame.transform.scale(thisImg, (display_width,display_height))
+            
+        def imgdisplay(x,y):
+            self._screen.blit(thisImg, (x,y))
+
+        x =  (display_width *0)
+        y = (display_height *0)
+
+        timeout = time.time() + time_count
+        while True:
+            if time.time() > timeout:
+                break
+            imgdisplay(x,y)
+            pygame.display.update()
+            clock.tick(60)
 
     def run(self):
         """Main program loop.  Will never return!"""
@@ -212,10 +242,20 @@ class VideoLooper(object):
             # Load and play a new movie if nothing is playing.
             if not self._player.is_playing():
                 movie = playlist.get_next()
+                is_image=False
                 if movie is not None:
-                    # Start playing the first available movie.
-                    self._print('Playing movie: {0}'.format(movie))
-                    self._player.play(movie, loop=playlist.length() == 1, vol = self._sound_vol)
+                    for IMG_ex in self._IMG_extensions:
+                        file_exten=movie[-3:].lower()
+                        if file_exten==IMG_ex:
+                            is_image=True
+                    if is_image:
+                        self._DisplayIMG(movie,pygame.display.Info().current_w,pygame.display.Info().current_h,self._img_time)
+                        self._blank_screen()
+                    else:
+                        # Start playing the first available movie.
+                        self._blank_screen()
+                        self._print('Playing movie: {0}'.format(movie))
+                        self._player.play(movie, loop=playlist.length() == 1, vol = self._sound_vol)
             # Check for changes in the file search path (like USB drives added)
             # and rebuild the playlist.
             if self._reader.is_changed():
@@ -224,6 +264,12 @@ class VideoLooper(object):
                 # Rebuild playlist and show countdown again (if OSD enabled).
                 playlist = self._build_playlist()
                 self._prepare_to_run_playlist(playlist)
+            # provide an exit by pressing the escape key
+            for event in pygame.event.get():
+                if event.type==pygame.KEYDOWN and event.key==pygame.K_ESCAPE:
+                    self._player.stop()
+                    self._running=False
+                    pygame.quit()
             # Give the CPU some time to do other tasks.
             time.sleep(0.002)
 
