@@ -216,12 +216,12 @@ class VideoLooper(object):
         # Display a JPG file only
         clock = pygame.time.Clock()
         thisImg = pygame.image.load(movie)
-        thisImg = pygame.transform.smoothscale(thisImg, (display_width,display_height))
+        thisImg = pygame.transform.smoothscale(thisImg, (display_width-5,display_height))
             
         def imgdisplay(x,y):
             self._screen.blit(thisImg, (x,y))
 
-        x =  (display_width *0)
+        x =  (display_width *0+5)
         y = (display_height *0)
 
         timeout = time.time() + time_count
@@ -249,11 +249,11 @@ class VideoLooper(object):
                         if file_exten==IMG_ex:
                             is_image=True
                     if is_image:
-                        #self._blank_screen()
+                        self._blank_screen()
                         self._DisplayIMG(movie,pygame.display.Info().current_w,pygame.display.Info().current_h,self._img_time)
                     else:
                         # Start playing the first available movie.
-                        #self._blank_screen()
+                        self._blank_screen()
                         self._print('Playing movie: {0}'.format(movie))
                         self._player.play(movie, loop=playlist.length() == 1, vol = self._sound_vol)
             # Check for changes in the file search path (like USB drives added)
