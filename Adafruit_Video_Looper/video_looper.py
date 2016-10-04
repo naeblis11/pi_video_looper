@@ -86,6 +86,7 @@ class VideoLooper(object):
         self._small_font = pygame.font.Font(None, 50)
         self._big_font   = pygame.font.Font(None, 250)
         self._running    = True
+        self._movies=''
 
     def _print(self, message):
         """Print message to standard output if console output is enabled."""
@@ -250,19 +251,20 @@ class VideoLooper(object):
         for IMG_ex in self._IMG_extensions:
             if trans_exten==IMG_ex:
                 trans_image=True
-        for trans_movie in self._movies:
-            temp=trans_movie[-len(self._transition_file):]
-            if trans_movie[-len(self._transition_file):]==self._transition_file:
-                play_trans_movie=trans_movie
+        if self._movies<>'':
+            for trans_movie in self._movies:
+                temp=trans_movie[-len(self._transition_file):]
+                if trans_movie[-len(self._transition_file):]==self._transition_file:
+                    play_trans_movie=trans_movie
         while self._running:
             # Load and play a new movie if nothing is playing.
             #Check if this is the transition file, if so, skip it
             is_image=False
             if not self._player.is_playing():
                 #Check if we are due for a transition file
-                print(movie_count%self._files_between_transition)
+                #print(movie_count%self._files_between_transition)
                 if movie_count%self._files_between_transition==0.0:
-                    print(movie_count)
+                    #print(movie_count)
                     movie_count+=1
                     if trans_image:
                         self._blank_screen()
@@ -277,7 +279,7 @@ class VideoLooper(object):
                 is_image=False
                 if movie<>play_trans_movie:
                     if movie is not None:
-                        print(movie_count)
+                        #print(movie_count)
                         movie_count+=1
                         #if not self._player.is_playing():
                         #Check for extensions between images and movies
