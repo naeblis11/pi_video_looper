@@ -74,7 +74,7 @@ class VideoLooper(object):
         pygame.font.init()
         pygame.mouse.set_visible(False)
         size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
-        self._screen = pygame.display.set_mode(size)#, pygame.FULLSCREEN)
+        self._screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
         self._blank_screen()
         # Set other static internal state.
         self._extensions = self._player.supported_extensions()
@@ -221,12 +221,12 @@ class VideoLooper(object):
         # Display a JPG file only
         clock = pygame.time.Clock()
         thisImg = pygame.image.load(movie)
-        thisImg = pygame.transform.smoothscale(thisImg, (display_width-5,display_height))
+        thisImg = pygame.transform.smoothscale(thisImg, (display_width,display_height))
             
         def imgdisplay(x,y):
             self._screen.blit(thisImg, (x,y))
 
-        x =  (display_width *0+5)
+        x =  (display_width *0)
         y = (display_height *0)
 
         timeout = time.time() + time_count
@@ -251,51 +251,51 @@ class VideoLooper(object):
         for IMG_ex in self._IMG_extensions:
             if trans_exten==IMG_ex:
                 trans_image=True
-        if self._movies<>'':
-            for trans_movie in self._movies:
-                temp=trans_movie[-len(self._transition_file):]
-                if trans_movie[-len(self._transition_file):]==self._transition_file:
-                    play_trans_movie=trans_movie
         while self._running:
-            # Load and play a new movie if nothing is playing.
-            #Check if this is the transition file, if so, skip it
-            is_image=False
-            if not self._player.is_playing():
-                #Check if we are due for a transition file
-                #print(movie_count%self._files_between_transition)
-                if movie_count%self._files_between_transition==0.0:
-                    #print(movie_count)
-                    movie_count+=1
-                    if trans_image:
-                        self._blank_screen()
-                        self._print('Playing movie: {0}'.format(self._transition_file))
-                        self._DisplayIMG(self._transition_file,pygame.display.Info().current_w,pygame.display.Info().current_h,self._img_time)
-                    else:
-                        # Start playing the first available movie.
-                        self._blank_screen()
-                        self._player.play(play_trans_movie, loop=playlist.length() == 1, vol = self._sound_vol)
-            if not self._player.is_playing():
-                movie = playlist.get_next()
+            if self._movies<>[]:
+                for trans_movie in self._movies:
+                    temp=trans_movie[-len(self._transition_file):]
+                    if trans_movie[-len(self._transition_file):]==self._transition_file:
+                        play_trans_movie=trans_movie
+                # Load and play a new movie if nothing is playing.
+                #Check if this is the transition file, if so, skip it
                 is_image=False
-                if movie<>play_trans_movie:
-                    if movie is not None:
+                if not self._player.is_playing():
+                    #Check if we are due for a transition file
+                    #print(movie_count%self._files_between_transition)
+                    if movie_count%self._files_between_transition==0.0:
                         #print(movie_count)
                         movie_count+=1
-                        #if not self._player.is_playing():
-                        #Check for extensions between images and movies
-                        for IMG_ex in self._IMG_extensions:
-                            file_exten=movie[-3:].lower()
-                            if file_exten==IMG_ex:
-                                is_image=True
-                        if is_image:
+                        if trans_image:
                             self._blank_screen()
-                            self._print('Playing movie: {0}'.format(movie))
-                            self._DisplayIMG(movie,pygame.display.Info().current_w,pygame.display.Info().current_h,self._img_time)
+                            self._print('Playing movie: {0}'.format(self._transition_file))
+                            self._DisplayIMG(self._transition_file,pygame.display.Info().current_w,pygame.display.Info().current_h,self._img_time)
                         else:
                             # Start playing the first available movie.
                             self._blank_screen()
-                            self._print('Playing movie: {0}'.format(movie))
-                            self._player.play(movie, loop=playlist.length() == 1, vol = self._sound_vol)
+                            self._player.play(play_trans_movie, loop=playlist.length() == 1, vol = self._sound_vol)
+                if not self._player.is_playing():
+                    movie = playlist.get_next()
+                    is_image=False
+                    if movie<>play_trans_movie:
+                        if movie is not None:
+                            #print(movie_count)
+                            movie_count+=1
+                            #if not self._player.is_playing():
+                            #Check for extensions between images and movies
+                            for IMG_ex in self._IMG_extensions:
+                                file_exten=movie[-3:].lower()
+                                if file_exten==IMG_ex:
+                                    is_image=True
+                            if is_image:
+                                self._blank_screen()
+                                self._print('Playing movie: {0}'.format(movie))
+                                self._DisplayIMG(movie,pygame.display.Info().current_w,pygame.display.Info().current_h,self._img_time)
+                            else:
+                                # Start playing the first available movie.
+                                self._blank_screen()
+                                self._print('Playing movie: {0}'.format(movie))
+                                self._player.play(movie, loop=playlist.length() == 1, vol = self._sound_vol)
             # Check for changes in the file search path (like USB drives added)
             # and rebuild the playlist.
             if self._reader.is_changed():
